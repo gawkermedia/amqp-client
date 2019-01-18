@@ -2,13 +2,13 @@ name := "amqp-client"
 
 organization := "com.kinja"
  
-version := "2.0.2" + (if (RELEASE_BUILD) "" else "-SNAPSHOT")
+version := "2.0.2-akka23" + (if (RELEASE_BUILD) "" else "-SNAPSHOT")
  
-crossScalaVersions := Seq("2.12.6", "2.11.8")
+crossScalaVersions := Seq("2.11.8")
 
 scalaVersion := crossScalaVersions.value.head
  
-val akkaVersion = "2.5.11"
+val akkaVersion = "2.3.13"
 
 scalacOptions ++= Seq(
 	"-feature",

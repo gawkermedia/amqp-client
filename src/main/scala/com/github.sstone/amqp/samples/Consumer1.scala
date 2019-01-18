@@ -52,5 +52,5 @@ object Consumer1 extends App {
   println("press enter...")
 
   System.in.read()
-  system.terminate()
+  system.shutdown()
 }

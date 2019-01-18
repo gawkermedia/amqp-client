@@ -229,11 +229,11 @@ class ChannelOwner(init: Seq[Request] = Seq.empty[Request], channelParams: Optio
     case Shutdown(cause) if !cause.isInitiatedByApplication => {
       log.error(cause, "shutdown")
       //context.stop is an async operator so we are waiting for termination before recreating channel
-      context.watchWith(forwarder, ForwarderStopped)
+      context.watch(forwarder)
       context.stop(forwarder)
     }
 
-    case ForwarderStopped => {
+    case Terminated(actor) if actor == forwarder => {
       log.warning("Forwarder terminated - recreating channel")
       context.parent ! ConnectionOwner.CreateChannel
       statusListeners.map(a => a ! Disconnected)
