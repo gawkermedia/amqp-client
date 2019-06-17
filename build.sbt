@@ -6,7 +6,7 @@ version := "2.2.1" + (if (RELEASE_BUILD) "" else "-SNAPSHOT")
  
 crossScalaVersions := Seq("2.13.0", "2.12.8", "2.11.12")
 
-scalaVersion := "2.13.0"
+scalaVersion := "2.12.8"
  
 val akkaVersion = "2.5.23"
 
