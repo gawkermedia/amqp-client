@@ -12,6 +12,9 @@ import java.util.concurrent.TimeUnit
 
 @RunWith(classOf[JUnitRunner])
 class PendingAcksSpec extends ChannelSpec with WordSpecLike {
+
+  case object Done
+
   "consumers" should {
     "receive messages that were delivered to another consumer that crashed before it acked them" in {
       val exchange = ExchangeParameters(name = "amq.direct", exchangeType = "", passive = true)
@@ -32,7 +35,7 @@ class PendingAcksSpec extends ChannelSpec with WordSpecLike {
             case Delivery(consumerTag, envelope, properties, body) => {
               log.info(s"received ${new String(body, "UTF-8")} tag = ${envelope.getDeliveryTag} redeliver = ${envelope.isRedeliver}")
               counter = counter + 1
-              if (counter == 10) probe.ref ! 'done
+              if (counter == 10) probe.ref ! Done
             }
           }
         }
@@ -48,7 +51,7 @@ class PendingAcksSpec extends ChannelSpec with WordSpecLike {
 
       for (i <- 1 to 10) producer ! Publish(exchange.name, routingKey, message)
 
-      probe.expectMsg(1 second, 'done)
+      probe.expectMsg(1 second, Done)
       assert(counter == 10)
 
       // now we should see 10 pending acks in the broker
@@ -62,7 +65,7 @@ class PendingAcksSpec extends ChannelSpec with WordSpecLike {
               log.info(s"received ${new String(body, "UTF-8")} tag = ${envelope.getDeliveryTag} redeliver = ${envelope.isRedeliver}")
               counter1 = counter1 + 1
               sender ! Ack(envelope.getDeliveryTag)
-              if (counter1 == 10) probe.ref ! 'done
+              if (counter1 == 10) probe.ref ! Done
             }
           }
         }
@@ -77,7 +80,7 @@ class PendingAcksSpec extends ChannelSpec with WordSpecLike {
       // kill first consumer
       consumer ! PoisonPill
 
-      probe.expectMsg(1 second, 'done)
+      probe.expectMsg(1 second, Done)
       assert(counter1 == 10)
     }
   }

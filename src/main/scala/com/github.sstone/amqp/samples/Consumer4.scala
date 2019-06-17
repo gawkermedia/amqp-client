@@ -15,6 +15,8 @@ import scala.concurrent.duration._
 object Consumer4 extends App {
   implicit val system = ActorSystem("mySystem")
 
+  case object Switch
+
   // create an AMQP connection
   val connFactory = new ConnectionFactory()
   connFactory.setUri("amqp://guest:guest@localhost/%2F")
@@ -31,8 +33,8 @@ object Consumer4 extends App {
   class Boot extends Actor with ActorLogging {
     conn ! Create(Consumer.props(listener = self, autoack = false, channelParams = None), name = Some("consumer"))
 
-    context.system.scheduler.schedule(1 second, 10 seconds, self, ('switch, "queue1"))
-    context.system.scheduler.schedule(10 seconds, 10 seconds, self, ('switch, "queue2"))
+    context.system.scheduler.schedule(1 second, 10 seconds, self, (Switch, "queue1"))
+    context.system.scheduler.schedule(10 seconds, 10 seconds, self, (Switch, "queue2"))
 
     override def unhandled(message: Any): Unit = message match {
       case Delivery(consumerTag, envelope, properties, body) =>
@@ -48,7 +50,7 @@ object Consumer4 extends App {
     }
 
     def usingConsumer(consumer: ActorRef): Receive = {
-      case ('switch, queue: String) =>
+      case (Switch, queue: String) =>
         log.info(s"switch to queue $queue")
         consumer ! AddQueue(QueueParameters(name = queue, passive = true))
       case Amqp.Ok(AddQueue(_), Some(consumerTag: String)) =>
@@ -57,7 +59,7 @@ object Consumer4 extends App {
     }
 
     def usingConsumer(consumer: ActorRef, consumerTag: String): Receive = {
-      case ('switch, queue: String) =>
+      case (Switch, queue: String) =>
         log.info(s"switch to queue $queue")
         consumer ! AddQueue(QueueParameters(name = queue, passive = true))
       case Amqp.Ok(AddQueue(_), Some(newConsumerTag: String)) =>

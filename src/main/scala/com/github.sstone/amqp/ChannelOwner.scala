@@ -54,7 +54,7 @@ object ChannelOwner {
       }
       case request@AddReturnListener(listener) => {
         sender ! withChannel(channel, request)(c => c.addReturnListener(new ReturnListener {
-          def handleReturn(replyCode: Int, replyText: String, exchange: String, routingKey: String, properties: BasicProperties, body: Array[Byte]) {
+          def handleReturn(replyCode: Int, replyText: String, exchange: String, routingKey: String, properties: BasicProperties, body: Array[Byte]): Unit = {
             listener ! ReturnedMessage(replyCode, replyText, exchange, routingKey, properties, body)
           }
         }))
@@ -115,13 +115,13 @@ object ChannelOwner {
       case request@CreateConsumer(listener) => {
         log.debug(s"creating new consumer for listener $listener")
         sender ! withChannel(channel, request)(c => new DefaultConsumer(channel) {
-          override def handleDelivery(consumerTag: String, envelope: Envelope, properties: BasicProperties, body: Array[Byte]) {
+          override def handleDelivery(consumerTag: String, envelope: Envelope, properties: BasicProperties, body: Array[Byte]): Unit = {
             listener ! com.github.sstone.amqp.Amqp.Delivery(consumerTag, envelope, properties, body)
           }
         })
       }
-      case request@ConfirmSelect => {
-        sender ! withChannel(channel, request)(c => c.confirmSelect())
+      case ConfirmSelect => {
+        sender ! withChannel(channel, ConfirmSelect)(c => c.confirmSelect())
       }
       case request@AddConfirmListener(listener) => {
         sender ! withChannel(channel, request)(c => c.addConfirmListener(new ConfirmListener {
@@ -243,7 +243,7 @@ class ChannelOwner(init: Seq[Request] = Seq.empty[Request], channelParams: Optio
     }
   }
 
-  private def addStatusListener(listener: ActorRef) {
+  private def addStatusListener(listener: ActorRef): Unit = {
     if (!statusListeners.contains(listener)) {
       context.watch(listener)
       statusListeners.add(listener)
