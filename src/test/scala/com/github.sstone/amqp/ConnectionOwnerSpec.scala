@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 
 @RunWith(classOf[JUnitRunner])
 class ConnectionOwnerSpec extends TestKit(ActorSystem("TestSystem")) with WordSpecLike with Matchers with ImplicitSender {
-  implicit val timeout = Timeout(5 seconds)
+  implicit val timeout = Timeout(5.seconds)
 
   "ConnectionOwner" should {
     "provide channels for many child actors" in {
@@ -32,7 +32,7 @@ class ConnectionOwnerSpec extends TestKit(ActorSystem("TestSystem")) with WordSp
         p.send(conn, CreateChannel)
         p.expectMsgClass(2.second, classOf[Channel])
       }
-      Await.result(gracefulStop(conn, 5 seconds), 6 seconds)
+      Await.result(gracefulStop(conn, 5.seconds), 6.seconds)
     }
     "connect even if the default host is unavailable" in {
       val connFactory = new ConnectionFactory()
@@ -51,7 +51,7 @@ class ConnectionOwnerSpec extends TestKit(ActorSystem("TestSystem")) with WordSp
         p.send(conn, CreateChannel)
         p.expectMsgClass(2.second, classOf[Channel])
       }
-      Await.result(gracefulStop(conn, 5 seconds), 6 seconds)
+      Await.result(gracefulStop(conn, 5.seconds), 6.seconds)
     }
     "send Connected/Disconnected status messages" in {
       val connFactory = new ConnectionFactory()
@@ -60,9 +60,9 @@ class ConnectionOwnerSpec extends TestKit(ActorSystem("TestSystem")) with WordSp
       val probe = TestProbe()
       val conn = system.actorOf(ConnectionOwner.props(connFactory))
       conn ! AddStatusListener(probe.ref)
-      probe.expectMsg(2 seconds, Connected)
+      probe.expectMsg(2.seconds, Connected)
       conn ! Abort()
-      probe.expectMsg(2 seconds, Disconnected)
+      probe.expectMsg(2.seconds, Disconnected)
     }
   }
 }

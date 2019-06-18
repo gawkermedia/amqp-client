@@ -19,7 +19,7 @@ class ChannelOwnerSpec extends ChannelSpec  {
 
     "implement basic error handling" in {
       channelOwner ! DeclareQueue(QueueParameters("no_such_queue", passive = true))
-      expectMsgClass(1 second, classOf[Amqp.Error])
+      expectMsgClass(1.second, classOf[Amqp.Error])
     }
 
     "allow users to create, bind, get from, purge and delete queues" in {
@@ -29,29 +29,29 @@ class ChannelOwnerSpec extends ChannelSpec  {
       channelOwner ! DeclareQueue(QueueParameters(queue, passive = false, durable = false, autodelete = true))
       channelOwner ! QueueBind(queue, "amq.direct", "my_test_key")
       channelOwner ! Publish("amq.direct", "my_test_key", "yo!".getBytes)
-      receiveN(3, 2 seconds)
+      receiveN(3, 2.seconds)
       Thread.sleep(100)
 
       // check that there is 1 message in the queue
       channelOwner ! DeclareQueue(QueueParameters(queue, passive = true))
-      val Amqp.Ok(_, Some(check1: Queue.DeclareOk)) = receiveOne(1 second)
+      val Amqp.Ok(_, Some(check1: Queue.DeclareOk)) = receiveOne(1.second)
 
       // receive from the queue
       channelOwner ! Get(queue, true)
-      val Amqp.Ok(_, Some(msg: GetResponse)) = receiveOne(1 second)
+      val Amqp.Ok(_, Some(msg: GetResponse)) = receiveOne(1.second)
       assert(new String(msg.getBody) == "yo!")
 
       // purge the queue
       channelOwner ! PurgeQueue(queue)
-      receiveOne(1 second)
+      receiveOne(1.second)
 
       // check that there are no more messages in the queue
       channelOwner ! DeclareQueue(QueueParameters(queue, passive = true))
-      val Amqp.Ok(_, Some(check2: Queue.DeclareOk)) = receiveOne(1 second)
+      val Amqp.Ok(_, Some(check2: Queue.DeclareOk)) = receiveOne(1.second)
 
       // delete the queue
       channelOwner ! DeleteQueue(queue)
-      val Amqp.Ok(_, Some(_: Queue.DeleteOk)) = receiveOne(1 second)
+      val Amqp.Ok(_, Some(_: Queue.DeleteOk)) = receiveOne(1.second)
 
       assert(check1.getMessageCount === 1)
       assert(check2.getMessageCount === 0)
@@ -60,10 +60,10 @@ class ChannelOwnerSpec extends ChannelSpec  {
 
   "return unroutable messages" in {
     channelOwner ! AddReturnListener(self)
-    val Amqp.Ok(_, None) = receiveOne(1 seconds)
+    val Amqp.Ok(_, None) = receiveOne(1.seconds)
     channelOwner ! Publish("", "no_such_queue", "test".getBytes)
-    val Amqp.Ok(_, Some(MessageUniqueKey(_, _))) = receiveOne(1 seconds)
-    expectMsgClass(1 seconds, classOf[ReturnedMessage])
+    val Amqp.Ok(_, Some(MessageUniqueKey(_, _))) = receiveOne(1.seconds)
+    expectMsgClass(1.seconds, classOf[ReturnedMessage])
   }
 
   "register status listeners" in {
@@ -93,11 +93,11 @@ class ChannelOwnerSpec extends ChannelSpec  {
     val deadletterProbe = TestProbe()
     system.eventStream.subscribe(deadletterProbe.ref, classOf[DeadLetter])
 
-    Await.result(gracefulStop(statusListenerProbe, 5 seconds), 6 seconds)
+    Await.result(gracefulStop(statusListenerProbe, 5.seconds), 6.seconds)
 
     channelOwner ! DeclareQueue(QueueParameters("NO_SUCH_QUEUE", passive = true))
     expectMsgClass(classOf[Amqp.Error])
-    deadletterProbe.expectNoMessage(1 second)
+    deadletterProbe.expectNoMessage(1.second)
   }
 
   "return requests when not connected" in {

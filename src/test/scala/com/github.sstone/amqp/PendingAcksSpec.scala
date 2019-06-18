@@ -45,13 +45,13 @@ class PendingAcksSpec extends ChannelSpec with WordSpecLike {
       Amqp.waitForConnection(system, consumer, producer).await(1, TimeUnit.SECONDS)
 
       consumer ! AddBinding(Binding(exchange, queue, routingKey))
-      val Amqp.Ok(AddBinding(Binding(_, _, _)), _) = receiveOne(1 second)
+      val Amqp.Ok(AddBinding(Binding(_, _, _)), _) = receiveOne(1.second)
 
       val message = "yo!".getBytes
 
       for (_ <- 1 to 10) producer ! Publish(exchange.name, routingKey, message)
 
-      probe.expectMsg(1 second, Done)
+      probe.expectMsg(1.second, Done)
       assert(counter == 10)
 
       // now we should see 10 pending acks in the broker
@@ -75,12 +75,12 @@ class PendingAcksSpec extends ChannelSpec with WordSpecLike {
 
 
       consumer1 ! AddBinding(Binding(exchange, queue, routingKey))
-      val Amqp.Ok(AddBinding(Binding(_, _, _)), _) = receiveOne(1 second)
+      val Amqp.Ok(AddBinding(Binding(_, _, _)), _) = receiveOne(1.second)
 
       // kill first consumer
       consumer ! PoisonPill
 
-      probe.expectMsg(1 second, Done)
+      probe.expectMsg(1.second, Done)
       assert(counter1 == 10)
     }
   }

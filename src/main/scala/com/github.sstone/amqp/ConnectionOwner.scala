@@ -25,7 +25,7 @@ object ConnectionOwner {
 
   case object Connect
 
-  def props(connFactory: ConnectionFactory, reconnectionDelay: FiniteDuration = 10000 millis,
+  def props(connFactory: ConnectionFactory, reconnectionDelay: FiniteDuration = 10000.millis,
             executor: Option[ExecutorService] = None, addresses: Option[Array[RMQAddress]] = None): Props = {
     connFactory.setAutomaticRecoveryEnabled(false) //Automatic recovery causing leaking connection in this library
     Props(new ConnectionOwner(connFactory, reconnectionDelay, executor, addresses))
@@ -87,7 +87,7 @@ class ConnectionOwner(connFactory: ConnectionFactory,
   var connection: Option[Connection] = None
   val statusListeners = collection.mutable.HashSet.empty[ActorRef]
 
-  val reconnectTimer = context.system.scheduler.schedule(10 milliseconds, reconnectionDelay, self, Connect)
+  val reconnectTimer = context.system.scheduler.schedule(10.milliseconds, reconnectionDelay, self, Connect)
 
   override def postStop: Unit = {
     connection.map{ c =>

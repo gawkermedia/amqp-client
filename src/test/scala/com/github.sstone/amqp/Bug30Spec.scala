@@ -30,7 +30,7 @@ object Bug30Spec {
     val producer = ConnectionOwner.createChildActor(conn, ChannelOwner.props())
     Amqp.waitForConnection(context.system, consumer, producer)
 
-    context.system.scheduler.schedule(10 milliseconds, 500 milliseconds, producer, Publish("amq.direct", "my_key", body = "test".getBytes("UTF-8")))
+    context.system.scheduler.schedule(10.milliseconds, 500.milliseconds, producer, Publish("amq.direct", "my_key", body = "test".getBytes("UTF-8")))
 
     var counter = 0
 
@@ -40,7 +40,7 @@ object Bug30Spec {
         log.info(s"receive deliveryTag ${envelope.getDeliveryTag} from $replyTo")
         // wait 500 milliseconds before acking tne message: this makes sure that there are pending acknowledgments when the
         // consumer crashes
-        context.system.scheduler.scheduleOnce(500 milliseconds, replyTo, Ack(envelope.getDeliveryTag))
+        context.system.scheduler.scheduleOnce(500.milliseconds, replyTo, Ack(envelope.getDeliveryTag))
         counter = counter + 1
         if (counter == 10) self ! Crash
         if (counter == 20) {
@@ -71,7 +71,7 @@ class Bug30Spec extends ChannelSpec {
     "redefine consumers when a channel fails" in {
       val probe = TestProbe()
       val _ = system.actorOf(Props(new Bug30Spec.Listener(conn, probe.ref)), "listener")
-      probe.expectMsg(15 seconds, Bug30Spec.Done)
+      probe.expectMsg(15.seconds, Bug30Spec.Done)
     }
   }
 }

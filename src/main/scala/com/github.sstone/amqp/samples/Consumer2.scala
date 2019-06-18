@@ -12,7 +12,7 @@ object Consumer2 extends App {
   // create an AMQP connection
   val connFactory = new ConnectionFactory()
   connFactory.setUri("amqp://guest:guest@localhost/%2F")
-  val conn = system.actorOf(ConnectionOwner.props(connFactory, 1 second))
+  val conn = system.actorOf(ConnectionOwner.props(connFactory, 1.second))
 
   // create an actor that will receive AMQP deliveries
   val listener = system.actorOf(Props(new Actor {

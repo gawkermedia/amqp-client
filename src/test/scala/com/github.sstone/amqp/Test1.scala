@@ -9,7 +9,7 @@ object Test1 extends App {
   implicit val system = ActorSystem("mySystem")
 
   // create an AMQP connection
-  val conn = system.actorOf(ConnectionOwner.props(new ConnectionFactory(), reconnectionDelay = 5 seconds), "connection")
+  val conn = system.actorOf(ConnectionOwner.props(new ConnectionFactory(), reconnectionDelay = 5.seconds), "connection")
 
   // create an actor that will receive AMQP deliveries
   val listener = system.actorOf(Props(new Actor {

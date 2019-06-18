@@ -29,7 +29,7 @@ object OneToAnyRpc extends App {
   // create an AMQP connection
   val connFactory = new ConnectionFactory()
   connFactory.setUri("amqp://guest:guest@localhost/%2F")
-  val conn = system.actorOf(ConnectionOwner.props(connFactory, 1 second))
+  val conn = system.actorOf(ConnectionOwner.props(connFactory, 1.second))
 
   val queueParams = QueueParameters("my_queue", passive = false, durable = false, exclusive = false, autodelete = true)
 
@@ -55,7 +55,7 @@ object OneToAnyRpc extends App {
   Amqp.waitForConnection(system, rpcServers: _*).await()
   Amqp.waitForConnection(system, rpcClient).await()
 
-  implicit val timeout: Timeout = 2 seconds
+  implicit val timeout: Timeout = 2.seconds
 
   for (i <- 0 to 5) {
     val request = ("request " + i).getBytes

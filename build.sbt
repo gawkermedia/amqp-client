@@ -11,12 +11,6 @@ scalaVersion := "2.12.8"
 val akkaVersion = "2.5.23"
 
 scalacOptions ++= Seq(
-	"-feature",
-	"-deprecation",
-	"-language:postfixOps"
-)
-
-scalacOptions ++= Seq(
 	"-unchecked",                        // Show details of unchecked warnings.
 	"-deprecation",                      // Show details of deprecation warnings.
 	"-encoding", "UTF-8",                // Set correct encoding for Scaladoc.

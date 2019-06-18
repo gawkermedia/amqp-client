@@ -10,7 +10,7 @@ import concurrent.duration._
 
 class AdminActor extends Actor {
   val connFactory = new ConnectionFactory()
-  val conn = context.actorOf(ConnectionOwner.props(connFactory, reconnectionDelay = 10 seconds))
+  val conn = context.actorOf(ConnectionOwner.props(connFactory, reconnectionDelay = 10.seconds))
   conn ! AddStatusListener(self)
 
   def receive = {

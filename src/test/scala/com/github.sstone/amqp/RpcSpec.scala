@@ -88,7 +88,7 @@ class RpcSpec extends ChannelSpec {
       val client = ConnectionOwner.createChildActor(conn, RpcClient.props(), timeout = 2000.millis)
       waitForConnection(system, conn, server, client).await(10, TimeUnit.SECONDS)
       server ! AddBinding(Binding(exchange, queue, routingKey))
-      val Amqp.Ok(AddBinding(_), _) = receiveOne(1 second)
+      val Amqp.Ok(AddBinding(_), _) = receiveOne(1.second)
 
       val myprops = new BasicProperties.Builder().contentType("my content").contentEncoding("my encoding").build()
       val future = client ? Request(Publish("amq.direct", routingKey, "yo!!".getBytes, Some(myprops)) :: Nil, 1)
@@ -125,7 +125,7 @@ class RpcSpec extends ChannelSpec {
       val server1 = ConnectionOwner.createChildActor(conn, RpcServer.props(proc1), timeout = 2000.millis)
       waitForConnection(system, conn, server1).await(5, TimeUnit.SECONDS)
       server1 ! AddBinding(Binding(exchange, queue, routingKey))
-      val Amqp.Ok(AddBinding(_), _) = receiveOne(1 second)
+      val Amqp.Ok(AddBinding(_), _) = receiveOne(1.second)
 
       val proc2 = new IProcessor {
         def process(delivery: Delivery) = Future(ProcessResult(Some("proc2".getBytes)))
@@ -135,7 +135,7 @@ class RpcSpec extends ChannelSpec {
       val server2 = ConnectionOwner.createChildActor(conn, RpcServer.props(proc2), timeout = 2000.millis)
       waitForConnection(system, conn, server2).await(5, TimeUnit.SECONDS)
       server2 ! AddBinding(Binding(exchange, queue, routingKey))
-      val Amqp.Ok(AddBinding(_), _) = receiveOne(1 second)
+      val Amqp.Ok(AddBinding(_), _) = receiveOne(1.second)
 
       val client = ConnectionOwner.createChildActor(conn, RpcClient.props(), timeout = 2000.millis)
       waitForConnection(system, conn, client).await(5, TimeUnit.SECONDS)

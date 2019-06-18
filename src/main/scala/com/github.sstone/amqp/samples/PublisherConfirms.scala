@@ -16,7 +16,7 @@ object PublisherConfirms extends App {
   // create an AMQP connection
   val connFactory = new ConnectionFactory()
   connFactory.setUri("amqp://guest:guest@localhost/%2F")
-  val conn = system.actorOf(ConnectionOwner.props(connFactory, 1 second))
+  val conn = system.actorOf(ConnectionOwner.props(connFactory, 1.second))
 
   val producer = ConnectionOwner.createChildActor(conn, ChannelOwner.props())
   Amqp.waitForConnection(system, producer).await()
