@@ -89,15 +89,18 @@ class ConnectionOwner(connFactory: ConnectionFactory,
 
   val reconnectTimer = context.system.scheduler.schedule(10 milliseconds, reconnectionDelay, self, Connect)
 
-  override def postStop = connection.map{ c =>
-    Try(if (c.isOpen) c.close())
-      .recover{ case e => log.error(e, "Connection closing failed")}
+  override def postStop: Unit = {
+    connection.map{ c =>
+      Try(if (c.isOpen) c.close())
+        .recover { case e => log.error(e, "Connection closing failed") }
+    }
+    ()
   }
 
   override def unhandled(message: Any): Unit = message match {
     case Terminated(actor) if statusListeners.contains(actor) => {
       context.unwatch(actor)
-      statusListeners.remove(actor)
+      val _ = statusListeners.remove(actor)
     }
     case _ => super.unhandled(message)
   }
@@ -129,7 +132,7 @@ class ConnectionOwner(connFactory: ConnectionFactory,
     conn.addShutdownListener(new ShutdownListener {
       def shutdownCompleted(cause: ShutdownSignalException): Unit = {
         self ! Shutdown(cause)
-        statusListeners.map(a => a ! Disconnected)
+        statusListeners.foreach(a => a ! Disconnected)
        }
     })
     conn

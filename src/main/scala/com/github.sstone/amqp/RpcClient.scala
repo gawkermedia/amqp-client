@@ -28,10 +28,10 @@ class RpcClient(channelParams: Option[ChannelParameters] = None) extends Channel
 
   import RpcClient._
 
-  var queue: String = ""
-  var consumer: Option[DefaultConsumer] = None
-  var counter: Int = 0
-  var correlationMap = scala.collection.mutable.Map.empty[String, RpcResult]
+  private var queue: String = ""
+  private var consumer: Option[DefaultConsumer] = None
+  private var counter: Int = 0
+  private val correlationMap = scala.collection.mutable.Map.empty[String, RpcResult]
 
   override def onChannel(channel: Channel, forwarder: ActorRef): Unit = {
     super.onChannel(channel, forwarder)
@@ -48,7 +48,7 @@ class RpcClient(channelParams: Option[ChannelParameters] = None) extends Channel
   }
 
   override def disconnected: Receive = LoggingReceive ({
-    case request@Request(publish, numberOfResponses) => {
+    case _ => {
       log.warning(s"not connected, cannot send rpc request")
     }
   }: Receive) orElse super.disconnected
@@ -65,7 +65,7 @@ class RpcClient(channelParams: Option[ChannelParameters] = None) extends Channel
         correlationMap += (counter.toString -> RpcResult(sender, numberOfResponses, collection.mutable.ListBuffer.empty[Delivery]))
       }
     }
-    case delivery@Delivery(consumerTag: String, envelope: Envelope, properties: BasicProperties, body: Array[Byte]) => {
+    case delivery@Delivery(_, envelope: Envelope, properties: BasicProperties, _) => {
       channel.basicAck(envelope.getDeliveryTag, false)
       correlationMap.get(properties.getCorrelationId) match {
         case Some(results) => {
@@ -78,7 +78,7 @@ class RpcClient(channelParams: Option[ChannelParameters] = None) extends Channel
         case None => log.warning("unexpected message with correlation id " + properties.getCorrelationId)
       }
     }
-    case msg@ReturnedMessage(replyCode, replyText, exchange, routingKey, properties, body) => {
+    case msg@ReturnedMessage(_, _, _, _, properties, _) => {
       correlationMap.get(properties.getCorrelationId) match {
         case Some(results) => {
           results.destination ! RpcClient.Undelivered(msg)

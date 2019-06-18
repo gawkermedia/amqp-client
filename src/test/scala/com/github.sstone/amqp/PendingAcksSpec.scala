@@ -23,7 +23,7 @@ class PendingAcksSpec extends ChannelSpec with WordSpecLike {
       var counter = 0
 
       ignoreMsg {
-        case Amqp.Ok(p:Publish, _) => true
+        case Amqp.Ok(_: Publish, _) => true
       }
 
       val probe = TestProbe()
@@ -32,7 +32,7 @@ class PendingAcksSpec extends ChannelSpec with WordSpecLike {
       val badListener = system.actorOf(Props {
         new Act with ActorLogging {
           become {
-            case Delivery(consumerTag, envelope, properties, body) => {
+            case Delivery(_, envelope, _, body) => {
               log.info(s"received ${new String(body, "UTF-8")} tag = ${envelope.getDeliveryTag} redeliver = ${envelope.isRedeliver}")
               counter = counter + 1
               if (counter == 10) probe.ref ! Done
@@ -49,7 +49,7 @@ class PendingAcksSpec extends ChannelSpec with WordSpecLike {
 
       val message = "yo!".getBytes
 
-      for (i <- 1 to 10) producer ! Publish(exchange.name, routingKey, message)
+      for (_ <- 1 to 10) producer ! Publish(exchange.name, routingKey, message)
 
       probe.expectMsg(1 second, Done)
       assert(counter == 10)
@@ -61,7 +61,7 @@ class PendingAcksSpec extends ChannelSpec with WordSpecLike {
       val goodListener = system.actorOf(Props {
         new Act with ActorLogging {
           become {
-            case Delivery(consumerTag, envelope, properties, body) => {
+            case Delivery(_, envelope, _, body) => {
               log.info(s"received ${new String(body, "UTF-8")} tag = ${envelope.getDeliveryTag} redeliver = ${envelope.isRedeliver}")
               counter1 = counter1 + 1
               sender ! Ack(envelope.getDeliveryTag)

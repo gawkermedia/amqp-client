@@ -103,7 +103,7 @@ class Consumer(listener: Option[ActorRef],
     case CheckBindings =>
       log.debug(s"Checking if bindings still exists for ${bindings}")
       bindings
-          .map { binding =>
+          .foreach { binding =>
             channel.queueBindNoWait(binding.queue.name,binding.exchange.name, binding.routingKey, null)
           }
 

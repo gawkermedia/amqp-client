@@ -14,7 +14,7 @@ object Test1 extends App {
   // create an actor that will receive AMQP deliveries
   val listener = system.actorOf(Props(new Actor {
     def receive = {
-      case Delivery(consumerTag, envelope, properties, body) => {
+      case Delivery(_, envelope, _, body) => {
         println("got a message: " + new String(body))
         sender ! Ack(envelope.getDeliveryTag)
       }

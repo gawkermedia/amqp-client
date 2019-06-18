@@ -37,7 +37,7 @@ object Consumer4 extends App {
     context.system.scheduler.schedule(10 seconds, 10 seconds, self, (Switch, "queue2"))
 
     override def unhandled(message: Any): Unit = message match {
-      case Delivery(consumerTag, envelope, properties, body) =>
+      case Delivery(_, envelope, _, body) =>
         log.info(s"received message ${new String(body)}")
         sender ! Ack(envelope.getDeliveryTag)
       case Amqp.Ok(_, _) => ()

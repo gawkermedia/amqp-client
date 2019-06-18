@@ -27,7 +27,7 @@ class ConnectionOwnerSpec extends TestKit(ActorSystem("TestSystem")) with WordSp
       val conn = system.actorOf(ConnectionOwner.props(connFactory))
       Amqp.waitForConnection(system, conn).await(2, TimeUnit.SECONDS)
       val actors = 100
-      for (i <- 0 until actors) {
+      for (_ <- 0 until actors) {
         val p = TestProbe()
         p.send(conn, CreateChannel)
         p.expectMsgClass(2.second, classOf[Channel])
@@ -46,7 +46,7 @@ class ConnectionOwnerSpec extends TestKit(ActorSystem("TestSystem")) with WordSp
         ))))
       Amqp.waitForConnection(system, conn).await(50, TimeUnit.SECONDS)
       val actors = 100
-      for (i <- 0 until actors) {
+      for (_ <- 0 until actors) {
         val p = TestProbe()
         p.send(conn, CreateChannel)
         p.expectMsgClass(2.second, classOf[Channel])

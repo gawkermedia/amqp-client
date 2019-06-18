@@ -51,7 +51,7 @@ class ChannelOwnerSpec extends ChannelSpec  {
 
       // delete the queue
       channelOwner ! DeleteQueue(queue)
-      val Amqp.Ok(_, Some(check3: Queue.DeleteOk)) = receiveOne(1 second)
+      val Amqp.Ok(_, Some(_: Queue.DeleteOk)) = receiveOne(1 second)
 
       assert(check1.getMessageCount === 1)
       assert(check2.getMessageCount === 0)
@@ -120,8 +120,8 @@ class ChannelOwnerSpec extends ChannelSpec  {
     // we also test for Ok() here because it is possible, though very unlikely, that the
     // ChannelOwner had already received a new channel before it got our test request
     expectMsgPF() {
-      case NotConnectedError(testRequest) => true
-      case Ok(testRequest, _) => true
+      case NotConnectedError(_) => true
+      case Ok(_, _) => true
     }
   }
 

@@ -5,7 +5,6 @@ import org.junit.runner.RunWith
 import akka.testkit.TestProbe
 import com.github.sstone.amqp.Amqp._
 import akka.actor.{Props, ActorLogging, ActorRef, Actor}
-import com.github.sstone.amqp.ConnectionOwner.Create
 import scala.concurrent.duration._
 import com.github.sstone.amqp.Amqp.Ack
 import com.github.sstone.amqp.Amqp.Publish
@@ -36,7 +35,7 @@ object Bug30Spec {
     var counter = 0
 
     def receive = {
-      case Delivery(consumerTag, envelope, properties, body) => {
+      case Delivery(_, envelope, _, _) => {
         val replyTo = sender
         log.info(s"receive deliveryTag ${envelope.getDeliveryTag} from $replyTo")
         // wait 500 milliseconds before acking tne message: this makes sure that there are pending acknowledgments when the
@@ -71,7 +70,7 @@ class Bug30Spec extends ChannelSpec {
   "ChannelOwner" should {
     "redefine consumers when a channel fails" in {
       val probe = TestProbe()
-      val listener = system.actorOf(Props(new Bug30Spec.Listener(conn, probe.ref)), "listener")
+      val _ = system.actorOf(Props(new Bug30Spec.Listener(conn, probe.ref)), "listener")
       probe.expectMsg(15 seconds, Bug30Spec.Done)
     }
   }

@@ -1,9 +1,9 @@
 package com.github.sstone.amqp
 
 import akka.testkit.{ImplicitSender, TestKit}
-import akka.actor.{ActorRef, Props, ActorSystem}
+import akka.actor.{ActorRef, ActorSystem}
 import akka.util.Timeout
-import akka.pattern.{ask, gracefulStop}
+import akka.pattern.gracefulStop
 import org.scalatest.{BeforeAndAfter, WordSpecLike}
 import org.scalatest.Matchers
 import java.util.concurrent.TimeUnit
