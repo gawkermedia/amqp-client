@@ -63,6 +63,7 @@ class RpcClient(channelParams: Option[ChannelParameters] = None) extends Channel
       })
       if (numberOfResponses > 0) {
         correlationMap += (counter.toString -> RpcResult(sender, numberOfResponses, collection.mutable.ListBuffer.empty[Delivery]))
+        ()
       }
     }
     case delivery@Delivery(_: String, envelope: Envelope, properties: BasicProperties, _: Array[Byte]) => {
@@ -73,6 +74,7 @@ class RpcClient(channelParams: Option[ChannelParameters] = None) extends Channel
           if (results.deliveries.length == results.expected) {
             results.destination ! Response(results.deliveries.toList)
             correlationMap -= properties.getCorrelationId
+            ()
           }
         }
         case None => log.warning("unexpected message with correlation id " + properties.getCorrelationId)
@@ -83,6 +85,7 @@ class RpcClient(channelParams: Option[ChannelParameters] = None) extends Channel
         case Some(results) => {
           results.destination ! RpcClient.Undelivered(msg)
           correlationMap -= properties.getCorrelationId
+          ()
         }
         case None => log.warning("unexpected returned message with correlation id " + properties.getCorrelationId)
       }
