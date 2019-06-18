@@ -90,11 +90,10 @@ class ConnectionOwner(connFactory: ConnectionFactory,
   val reconnectTimer = context.system.scheduler.schedule(10.milliseconds, reconnectionDelay, self, Connect)
 
   override def postStop: Unit = {
-    connection.map{ c =>
+    connection.foreach { c =>
       Try(if (c.isOpen) c.close())
         .recover { case e => log.error(e, "Connection closing failed") }
     }
-    ()
   }
 
   override def unhandled(message: Any): Unit = message match {
