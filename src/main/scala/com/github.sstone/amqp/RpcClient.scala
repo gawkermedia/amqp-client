@@ -48,7 +48,7 @@ class RpcClient(channelParams: Option[ChannelParameters] = None) extends Channel
   }
 
   override def disconnected: Receive = LoggingReceive ({
-    case _ => {
+    case Request(_, _) => {
       log.warning(s"not connected, cannot send rpc request")
     }
   }: Receive) orElse super.disconnected
@@ -65,7 +65,7 @@ class RpcClient(channelParams: Option[ChannelParameters] = None) extends Channel
         correlationMap += (counter.toString -> RpcResult(sender, numberOfResponses, collection.mutable.ListBuffer.empty[Delivery]))
       }
     }
-    case delivery@Delivery(_, envelope: Envelope, properties: BasicProperties, _) => {
+    case delivery@Delivery(_: String, envelope: Envelope, properties: BasicProperties, _: Array[Byte]) => {
       channel.basicAck(envelope.getDeliveryTag, false)
       correlationMap.get(properties.getCorrelationId) match {
         case Some(results) => {

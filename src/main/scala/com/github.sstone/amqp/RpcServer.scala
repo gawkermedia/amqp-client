@@ -76,7 +76,7 @@ class RpcServer(processor: RpcServer.IProcessor, init: Seq[Request] = Seq.empty[
   }
 
   override def connected(channel: Channel, forwarder: ActorRef) : Receive = LoggingReceive({
-    case delivery@Delivery(_, envelope: Envelope, properties: BasicProperties, _) => {
+    case delivery@Delivery(_: String, envelope: Envelope, properties: BasicProperties, _: Array[Byte]) => {
       log.debug("processing delivery")
       processor.process(delivery).onComplete {
         case Success(result) => {

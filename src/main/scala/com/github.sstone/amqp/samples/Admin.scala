@@ -29,7 +29,7 @@ class AdminActor extends Actor {
   }
 
   def connected(channel: ActorRef) : Receive = {
-    case Amqp.Ok(_, Some(result: Queue.DeclareOk)) => {
+    case Amqp.Ok(_: DeclareQueue, Some(result: Queue.DeclareOk)) => {
       println(s"there are ${result.getMessageCount} in queue ${result.getQueue}")
       val _ = context.system.terminate()
     }
