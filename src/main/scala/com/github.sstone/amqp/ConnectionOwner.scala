@@ -23,7 +23,9 @@ object ConnectionOwner {
 
   case object CreateChannel
 
-  def props(connFactory: ConnectionFactory, reconnectionDelay: FiniteDuration = 10000 millis,
+  case object Connect
+
+  def props(connFactory: ConnectionFactory, reconnectionDelay: FiniteDuration = 10000.millis,
             executor: Option[ExecutorService] = None, addresses: Option[Array[RMQAddress]] = None): Props = {
     connFactory.setAutomaticRecoveryEnabled(false) //Automatic recovery causing leaking connection in this library
     Props(new ConnectionOwner(connFactory, reconnectionDelay, executor, addresses))
@@ -85,17 +87,19 @@ class ConnectionOwner(connFactory: ConnectionFactory,
   var connection: Option[Connection] = None
   val statusListeners = collection.mutable.HashSet.empty[ActorRef]
 
-  val reconnectTimer = context.system.scheduler.schedule(10 milliseconds, reconnectionDelay, self, 'connect)
+  val reconnectTimer = context.system.scheduler.schedule(10.milliseconds, reconnectionDelay, self, Connect)
 
-  override def postStop = connection.map{ c =>
-    Try(if (c.isOpen) c.close())
-      .recover{ case e => log.error(e, "Connection closing failed")}
+  override def postStop: Unit = {
+    connection.foreach { c =>
+      Try(if (c.isOpen) c.close())
+        .recover { case e => log.error(e, "Connection closing failed") }
+    }
   }
 
   override def unhandled(message: Any): Unit = message match {
     case Terminated(actor) if statusListeners.contains(actor) => {
       context.unwatch(actor)
-      statusListeners.remove(actor)
+      val _ = statusListeners.remove(actor)
     }
     case _ => super.unhandled(message)
   }
@@ -125,9 +129,9 @@ class ConnectionOwner(connFactory: ConnectionFactory,
       case (Some(ex), Some(addr)) => connFactory.newConnection(ex, addr)
     }
     conn.addShutdownListener(new ShutdownListener {
-      def shutdownCompleted(cause: ShutdownSignalException) {
+      def shutdownCompleted(cause: ShutdownSignalException): Unit = {
         self ! Shutdown(cause)
-        statusListeners.map(a => a ! Disconnected)
+        statusListeners.foreach(a => a ! Disconnected)
        }
     })
     conn
@@ -140,7 +144,7 @@ class ConnectionOwner(connFactory: ConnectionFactory,
     /**
      * connect to the broker
      */
-    case 'connect => {
+    case Connect => {
       log.debug(s"trying to connect ${toUri(connFactory)}")
       Try(createConnection) match {
         case Success(conn) => {
@@ -172,7 +176,7 @@ class ConnectionOwner(connFactory: ConnectionFactory,
   }
 
   def connected(conn: Connection): Receive = LoggingReceive {
-    case 'connect => ()
+    case Connect => ()
     case Amqp.Ok(_, _) => ()
     case Abort(code, message) => {
       conn.abort(code, message)
@@ -211,12 +215,12 @@ class ConnectionOwner(connFactory: ConnectionFactory,
       }
       connection = None
       context.children.foreach(_ ! Shutdown(cause))
-      self ! 'connect
+      self ! Connect
       context.become(disconnected)
     }
   }
 
-  private def addStatusListener(listener: ActorRef) {
+  private def addStatusListener(listener: ActorRef): Unit = {
     if (!statusListeners.contains(listener)) {
       context.watch(listener)
       statusListeners.add(listener)

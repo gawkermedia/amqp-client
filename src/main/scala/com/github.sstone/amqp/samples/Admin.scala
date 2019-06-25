@@ -10,7 +10,7 @@ import concurrent.duration._
 
 class AdminActor extends Actor {
   val connFactory = new ConnectionFactory()
-  val conn = context.actorOf(ConnectionOwner.props(connFactory, reconnectionDelay = 10 seconds))
+  val conn = context.actorOf(ConnectionOwner.props(connFactory, reconnectionDelay = 10.seconds))
   conn ! AddStatusListener(self)
 
   def receive = {
@@ -29,9 +29,9 @@ class AdminActor extends Actor {
   }
 
   def connected(channel: ActorRef) : Receive = {
-    case Amqp.Ok(request: DeclareQueue, Some(result: Queue.DeclareOk)) => {
+    case Amqp.Ok(_: DeclareQueue, Some(result: Queue.DeclareOk)) => {
       println(s"there are ${result.getMessageCount} in queue ${result.getQueue}")
-      context.system.terminate()
+      val _ = context.system.terminate()
     }
   }
 }

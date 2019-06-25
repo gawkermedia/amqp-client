@@ -9,12 +9,12 @@ object Test1 extends App {
   implicit val system = ActorSystem("mySystem")
 
   // create an AMQP connection
-  val conn = system.actorOf(ConnectionOwner.props(new ConnectionFactory(), reconnectionDelay = 5 seconds), "connection")
+  val conn = system.actorOf(ConnectionOwner.props(new ConnectionFactory(), reconnectionDelay = 5.seconds), "connection")
 
   // create an actor that will receive AMQP deliveries
   val listener = system.actorOf(Props(new Actor {
     def receive = {
-      case Delivery(consumerTag, envelope, properties, body) => {
+      case Delivery(_, envelope, _, body) => {
         println("got a message: " + new String(body))
         sender ! Ack(envelope.getDeliveryTag)
       }

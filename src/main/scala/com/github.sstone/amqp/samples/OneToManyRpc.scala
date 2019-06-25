@@ -1,7 +1,7 @@
 package com.github.sstone.amqp.samples
 
 import akka.pattern.ask
-import akka.actor.{Actor, Props, ActorSystem}
+import akka.actor.ActorSystem
 import com.github.sstone.amqp._
 import com.github.sstone.amqp.Amqp._
 import com.github.sstone.amqp.RpcServer.{ProcessResult, IProcessor}
@@ -29,7 +29,7 @@ object OneToManyRpc extends App {
   // create an AMQP connection
   val connFactory = new ConnectionFactory()
   connFactory.setUri("amqp://guest:guest@localhost/%2F")
-  val conn = system.actorOf(ConnectionOwner.props(connFactory, 1 second))
+  val conn = system.actorOf(ConnectionOwner.props(connFactory, 1.second))
 
   // typical "reply queue"; the name if left empty: the broker will generate a new random name
   val privateReplyQueue = QueueParameters("", passive = false, durable = false, exclusive = true, autodelete = true)
@@ -59,7 +59,7 @@ object OneToManyRpc extends App {
   Amqp.waitForConnection(system, rpcServers: _*).await()
   Amqp.waitForConnection(system, rpcClient).await()
 
-  implicit val timeout: Timeout = 2 seconds
+  implicit val timeout: Timeout = 2.seconds
 
   for (i <- 0 to 5) {
     val request = ("request " + i).getBytes

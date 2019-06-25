@@ -15,27 +15,29 @@ import scala.concurrent.duration._
 object Consumer4 extends App {
   implicit val system = ActorSystem("mySystem")
 
+  case object Switch
+
   // create an AMQP connection
   val connFactory = new ConnectionFactory()
   connFactory.setUri("amqp://guest:guest@localhost/%2F")
-  val conn = system.actorOf(ConnectionOwner.props(connFactory, 1 second))
+  val conn = system.actorOf(ConnectionOwner.props(connFactory, 1.second))
   val producer = ConnectionOwner.createChildActor(conn, ChannelOwner.props())
 
   // send a message to queue1 and queue2 every second
   waitForConnection(system, conn, producer).await(5, TimeUnit.SECONDS)
   producer ! DeclareQueue(QueueParameters(name = "queue1", passive = false, durable = false,  autodelete = false))
   producer ! DeclareQueue(QueueParameters(name = "queue2", passive = false, durable = false,  autodelete = false))
-  system.scheduler.schedule(1 second, 1 second, producer, Publish(exchange = "", key = "queue1", body = "test1".getBytes("UTF-8")))
-  system.scheduler.schedule(1 second, 1 second, producer, Publish(exchange = "", key = "queue2", body = "test2".getBytes("UTF-8")))
+  system.scheduler.schedule(1.second, 1.second, producer, Publish(exchange = "", key = "queue1", body = "test1".getBytes("UTF-8")))
+  system.scheduler.schedule(1.second, 1.second, producer, Publish(exchange = "", key = "queue2", body = "test2".getBytes("UTF-8")))
 
   class Boot extends Actor with ActorLogging {
     conn ! Create(Consumer.props(listener = self, autoack = false, channelParams = None), name = Some("consumer"))
 
-    context.system.scheduler.schedule(1 second, 10 seconds, self, ('switch, "queue1"))
-    context.system.scheduler.schedule(10 seconds, 10 seconds, self, ('switch, "queue2"))
+    context.system.scheduler.schedule(1.second, 10.seconds, self, (Switch, "queue1"))
+    context.system.scheduler.schedule(10.seconds, 10.seconds, self, (Switch, "queue2"))
 
     override def unhandled(message: Any): Unit = message match {
-      case Delivery(consumerTag, envelope, properties, body) =>
+      case Delivery(_, envelope, _, body) =>
         log.info(s"received message ${new String(body)}")
         sender ! Ack(envelope.getDeliveryTag)
       case Amqp.Ok(_, _) => ()
@@ -48,7 +50,7 @@ object Consumer4 extends App {
     }
 
     def usingConsumer(consumer: ActorRef): Receive = {
-      case ('switch, queue: String) =>
+      case (Switch, queue: String) =>
         log.info(s"switch to queue $queue")
         consumer ! AddQueue(QueueParameters(name = queue, passive = true))
       case Amqp.Ok(AddQueue(_), Some(consumerTag: String)) =>
@@ -57,7 +59,7 @@ object Consumer4 extends App {
     }
 
     def usingConsumer(consumer: ActorRef, consumerTag: String): Receive = {
-      case ('switch, queue: String) =>
+      case (Switch, queue: String) =>
         log.info(s"switch to queue $queue")
         consumer ! AddQueue(QueueParameters(name = queue, passive = true))
       case Amqp.Ok(AddQueue(_), Some(newConsumerTag: String)) =>

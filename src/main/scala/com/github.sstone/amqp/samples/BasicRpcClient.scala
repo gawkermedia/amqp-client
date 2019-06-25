@@ -2,7 +2,7 @@ package com.github.sstone.amqp.samples
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
-import akka.actor.{Actor, ActorSystem}
+import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.util.Timeout
 import com.github.sstone.amqp.{ConnectionOwner, RpcClient}
@@ -17,12 +17,12 @@ object BasicRpcClient extends App {
   import ExecutionContext.Implicits.global
 
   implicit val system = ActorSystem("mySystem")
-  implicit val timeout: Timeout = 5 seconds
+  implicit val timeout: Timeout = 5.seconds
 
   // create an AMQP connection
   val connFactory = new ConnectionFactory()
   connFactory.setUri("amqp://guest:guest@localhost/%2F")
-  val conn = system.actorOf(ConnectionOwner.props(connFactory, 1 second))
+  val conn = system.actorOf(ConnectionOwner.props(connFactory, 1.second))
   val client = ConnectionOwner.createChildActor(conn, RpcClient.props())
 
   // send 1 request every second

@@ -33,7 +33,8 @@ object ChannelOwner {
 
     override def postStop(): Unit = {
       Try(if (channel.isOpen) channel.close())
-        .recover{ case e => log.error(e, "Channel closing failed:")}
+        .recover { case e => log.error(e, "Channel closing failed:") }
+      ()
     }
 
     override def unhandled(message: Any): Unit = log.warning(s"unhandled message $message")
@@ -54,7 +55,7 @@ object ChannelOwner {
       }
       case request@AddReturnListener(listener) => {
         sender ! withChannel(channel, request)(c => c.addReturnListener(new ReturnListener {
-          def handleReturn(replyCode: Int, replyText: String, exchange: String, routingKey: String, properties: BasicProperties, body: Array[Byte]) {
+          def handleReturn(replyCode: Int, replyText: String, exchange: String, routingKey: String, properties: BasicProperties, body: Array[Byte]): Unit = {
             listener ! ReturnedMessage(replyCode, replyText, exchange, routingKey, properties, body)
           }
         }))
@@ -114,13 +115,13 @@ object ChannelOwner {
       }
       case request@CreateConsumer(listener) => {
         log.debug(s"creating new consumer for listener $listener")
-        sender ! withChannel(channel, request)(c => new DefaultConsumer(channel) {
-          override def handleDelivery(consumerTag: String, envelope: Envelope, properties: BasicProperties, body: Array[Byte]) {
+        sender ! withChannel(channel, request)(_ => new DefaultConsumer(channel) {
+          override def handleDelivery(consumerTag: String, envelope: Envelope, properties: BasicProperties, body: Array[Byte]): Unit = {
             listener ! com.github.sstone.amqp.Amqp.Delivery(consumerTag, envelope, properties, body)
           }
         })
       }
-      case request@ConfirmSelect => {
+      case request: ConfirmSelect.type => {
         sender ! withChannel(channel, request)(c => c.confirmSelect())
       }
       case request@AddConfirmListener(listener) => {
@@ -176,7 +177,7 @@ class ChannelOwner(init: Seq[Request] = Seq.empty[Request], channelParams: Optio
   override def unhandled(message: Any): Unit = message match {
     case Terminated(actor) if statusListeners.contains(actor) => {
       context.unwatch(actor)
-      statusListeners.remove(actor)
+      val _ = statusListeners.remove(actor)
     }
     case _ => {
       log.warning(s"unhandled message $message")
@@ -185,7 +186,7 @@ class ChannelOwner(init: Seq[Request] = Seq.empty[Request], channelParams: Optio
   }
 
   def onChannel(channel: Channel, forwarder: ActorRef): Unit = {
-    channelParams.map(p => channel.basicQos(p.qos))
+    channelParams.foreach(p => channel.basicQos(p.qos))
   }
 
   def receive = disconnected
@@ -243,10 +244,10 @@ class ChannelOwner(init: Seq[Request] = Seq.empty[Request], channelParams: Optio
     }
   }
 
-  private def addStatusListener(listener: ActorRef) {
+  private def addStatusListener(listener: ActorRef): Unit = {
     if (!statusListeners.contains(listener)) {
       context.watch(listener)
-      statusListeners.add(listener)
+      val _ = statusListeners.add(listener)
     }
   }
 }

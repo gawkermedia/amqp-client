@@ -16,9 +16,9 @@ object Test2 extends App {
   import ExecutionContext.Implicits.global
 
   implicit val system = ActorSystem("mySystem")
-  implicit val timeout: Timeout = 1 second
+  implicit val timeout: Timeout = 1.second
   // create an AMQP connection
-  val conn = system.actorOf(ConnectionOwner.props(new ConnectionFactory(), reconnectionDelay = 5 seconds), "connection")
+  val conn = system.actorOf(ConnectionOwner.props(new ConnectionFactory(), reconnectionDelay = 5.seconds), "connection")
 
   val client = ConnectionOwner.createChildActor(conn, RpcClient.props(), Some("RpcClient"))
 

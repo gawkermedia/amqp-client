@@ -1,7 +1,7 @@
 package com.github.sstone.amqp.samples
 
 import akka.pattern.ask
-import akka.actor.{Actor, Props, ActorSystem}
+import akka.actor.ActorSystem
 import com.github.sstone.amqp._
 import com.github.sstone.amqp.Amqp._
 import com.github.sstone.amqp.RpcServer.{ProcessResult, IProcessor}
@@ -29,12 +29,12 @@ object OneToAnyRpc extends App {
   // create an AMQP connection
   val connFactory = new ConnectionFactory()
   connFactory.setUri("amqp://guest:guest@localhost/%2F")
-  val conn = system.actorOf(ConnectionOwner.props(connFactory, 1 second))
+  val conn = system.actorOf(ConnectionOwner.props(connFactory, 1.second))
 
   val queueParams = QueueParameters("my_queue", passive = false, durable = false, exclusive = false, autodelete = true)
 
   // create 2 equivalent servers
-  val rpcServers = for (i <- 1 to 2) yield {
+  val rpcServers = for (_ <- 1 to 2) yield {
     // create a "processor"
     // in real life you would use a serialization framework (json, protobuf, ....), define command messages, etc...
     // check the Akka AMQP proxies project for examples
@@ -55,7 +55,7 @@ object OneToAnyRpc extends App {
   Amqp.waitForConnection(system, rpcServers: _*).await()
   Amqp.waitForConnection(system, rpcClient).await()
 
-  implicit val timeout: Timeout = 2 seconds
+  implicit val timeout: Timeout = 2.seconds
 
   for (i <- 0 to 5) {
     val request = ("request " + i).getBytes
