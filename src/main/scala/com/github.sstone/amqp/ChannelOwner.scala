@@ -2,7 +2,7 @@ package com.github.sstone.amqp
 
 import java.util.UUID._
 
-import collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import com.rabbitmq.client.AMQP.BasicProperties
 import com.rabbitmq.client._
 import akka.actor._
