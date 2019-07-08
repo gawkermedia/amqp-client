@@ -7,7 +7,7 @@ import com.rabbitmq.client.AMQP.BasicProperties
 import akka.event.LoggingReceive
 import com.github.sstone.amqp.Consumer.CheckBindings
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object Consumer {
   def props(listener: Option[ActorRef], autoack: Boolean = false, init: Seq[Request] = Seq.empty[Request], channelParams: Option[ChannelParameters] = None,
