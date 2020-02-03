@@ -27,14 +27,14 @@ object Consumer4 extends App {
   waitForConnection(system, conn, producer).await(5, TimeUnit.SECONDS)
   producer ! DeclareQueue(QueueParameters(name = "queue1", passive = false, durable = false,  autodelete = false))
   producer ! DeclareQueue(QueueParameters(name = "queue2", passive = false, durable = false,  autodelete = false))
-  system.scheduler.schedule(1.second, 1.second, producer, Publish(exchange = "", key = "queue1", body = "test1".getBytes("UTF-8")))
-  system.scheduler.schedule(1.second, 1.second, producer, Publish(exchange = "", key = "queue2", body = "test2".getBytes("UTF-8")))
+  system.scheduler.scheduleAtFixedRate(1.second, 1.second, producer, Publish(exchange = "", key = "queue1", body = "test1".getBytes("UTF-8")))
+  system.scheduler.scheduleAtFixedRate(1.second, 1.second, producer, Publish(exchange = "", key = "queue2", body = "test2".getBytes("UTF-8")))
 
   class Boot extends Actor with ActorLogging {
     conn ! Create(Consumer.props(listener = self, autoack = false, channelParams = None), name = Some("consumer"))
 
-    context.system.scheduler.schedule(1.second, 10.seconds, self, (Switch, "queue1"))
-    context.system.scheduler.schedule(10.seconds, 10.seconds, self, (Switch, "queue2"))
+    context.system.scheduler.scheduleAtFixedRate(1.second, 10.seconds, self, (Switch, "queue1"))
+    context.system.scheduler.scheduleAtFixedRate(10.seconds, 10.seconds, self, (Switch, "queue2"))
 
     override def unhandled(message: Any): Unit = message match {
       case Delivery(_, envelope, _, body) =>

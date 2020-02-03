@@ -1,5 +1,6 @@
 package com.github.sstone.amqp
 
+import akka.event.Logging
 import akka.testkit.TestProbe
 import com.github.sstone.amqp.Amqp._
 import concurrent.duration._
@@ -24,7 +25,7 @@ class ConsumerSpec extends ChannelSpec {
       probe.expectMsg(1.second, ChannelOwner.Connected)
       consumer ! AddBinding(Binding(exchange, queue, "my_key"))
       val check = receiveOne(1.second)
-      println(check)
+      log.debug(check.toString)
       val message = "yo!".getBytes
       producer ! Publish(exchange.name, "my_key", message)
       probe.expectMsgClass(1.second, classOf[Delivery])

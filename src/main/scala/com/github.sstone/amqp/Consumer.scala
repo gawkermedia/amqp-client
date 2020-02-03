@@ -51,7 +51,7 @@ class Consumer(listener: Option[ActorRef],
 
   override def preStart(): Unit = {
     import scala.concurrent.duration._
-    context.system.scheduler.schedule(5.seconds, 5.seconds, self, Consumer.CheckBindings)(context.dispatcher)
+    context.system.scheduler.scheduleAtFixedRate(5.seconds, 5.seconds, self, Consumer.CheckBindings)(context.dispatcher)
     super.preStart()
   }
 
