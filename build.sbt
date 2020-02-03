@@ -4,7 +4,7 @@ organization := "com.kinja"
  
 version := "2.2.3" + (if (RELEASE_BUILD) "" else "-SNAPSHOT")
  
-crossScalaVersions := Seq("2.13.1", "2.12.8")
+crossScalaVersions := Seq("2.13.1")
 
 scalaVersion := crossScalaVersions.value.head
  
