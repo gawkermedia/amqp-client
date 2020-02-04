@@ -33,7 +33,6 @@ scalacOptions ++= Seq(
 	"-Xlint:stars-align",                // Pattern sequence wildcard must align with sequence component.
 	"-Xlint:type-parameter-shadow",      // A local type parameter shadows a type already in scope.
 	"-Ywarn-dead-code",                  // Fail when dead code is present. Prevents accidentally unreachable code.
-	"-Ywarn-dead-code",                  // Fail when dead code is present. Prevents accidentally unreachable code.
 	"-Ywarn-numeric-widen",              // Warn when numerics are widened.
 	"-Ywarn-value-discard",              // Prevent accidental discarding of results in unit functions.
 	"-Xlint:constant",                   // Evaluation of a constant arithmetic expression results in an error.
