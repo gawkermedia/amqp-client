@@ -2,6 +2,7 @@ package com.github.sstone.amqp
 
 import akka.testkit.{ImplicitSender, TestKit}
 import akka.actor.{ActorRef, ActorSystem}
+import akka.event.Logging
 import akka.util.Timeout
 import akka.pattern.gracefulStop
 import org.scalatest.{BeforeAndAfter, WordSpecLike}
@@ -15,6 +16,7 @@ import scala.util.Random
 
 class ChannelSpec extends TestKit(ActorSystem("TestSystem")) with WordSpecLike with Matchers with BeforeAndAfter with ImplicitSender {
   implicit val timeout = Timeout(5.seconds)
+  val log = Logging(system, this.getClass.getName)
   val connFactory = new ConnectionFactory()
   val uri = system.settings.config.getString("amqp-client-test.rabbitmq.uri")
   connFactory.setUri(uri)
@@ -31,14 +33,14 @@ class ChannelSpec extends TestKit(ActorSystem("TestSystem")) with WordSpecLike w
   def randomKey = "key" + random.nextInt()
 
   before {
-    println("before")
+    log.debug("before")
     conn = system.actorOf(ConnectionOwner.props(connFactory, 1.second))
     channelOwner = ConnectionOwner.createChildActor(conn, ChannelOwner.props())
     waitForConnection(system, conn, channelOwner).await(5, TimeUnit.SECONDS)
   }
 
   after {
-    println("after")
+    log.debug("after")
     Await.result(gracefulStop(conn, 5.seconds), 6.seconds)
   }
 }

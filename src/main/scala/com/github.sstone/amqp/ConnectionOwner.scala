@@ -87,7 +87,7 @@ class ConnectionOwner(connFactory: ConnectionFactory,
   var connection: Option[Connection] = None
   val statusListeners = collection.mutable.HashSet.empty[ActorRef]
 
-  val reconnectTimer = context.system.scheduler.schedule(10.milliseconds, reconnectionDelay, self, Connect)
+  val reconnectTimer = context.system.scheduler.scheduleAtFixedRate(10.milliseconds, reconnectionDelay, self, Connect)
 
   override def postStop: Unit = {
     connection.foreach { c =>

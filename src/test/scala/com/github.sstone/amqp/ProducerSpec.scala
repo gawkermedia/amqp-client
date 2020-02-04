@@ -28,7 +28,7 @@ class ProducerSpec extends ChannelSpec {
       fishForMessage(1.second) {
         case Amqp.Ok(AddBinding(Binding(`exchange`, `queue`, `routingKey`)), _) => true
         case msg => {
-          println(s"unexpected $msg")
+          log.debug(s"unexpected $msg")
           false
         }
       }

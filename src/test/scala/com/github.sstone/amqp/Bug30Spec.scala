@@ -30,7 +30,7 @@ object Bug30Spec {
     val producer = ConnectionOwner.createChildActor(conn, ChannelOwner.props())
     Amqp.waitForConnection(context.system, consumer, producer)
 
-    context.system.scheduler.schedule(10.milliseconds, 500.milliseconds, producer, Publish("amq.direct", "my_key", body = "test".getBytes("UTF-8")))
+    context.system.scheduler.scheduleAtFixedRate(10.milliseconds, 500.milliseconds, producer, Publish("amq.direct", "my_key", body = "test".getBytes("UTF-8")))
 
     var counter = 0
 

@@ -1,7 +1,6 @@
 package com.github.sstone.amqp
 
-import akka.actor.ActorDSL._
-import akka.actor.{PoisonPill, ActorLogging, Props}
+import akka.actor.{Actor, PoisonPill, ActorLogging, Props}
 import akka.testkit.TestProbe
 import com.github.sstone.amqp.Amqp._
 import org.junit.runner.RunWith
@@ -30,8 +29,8 @@ class PendingAcksSpec extends ChannelSpec with WordSpecLike {
 
       // create a consumer that does not ack messages
       val badListener = system.actorOf(Props {
-        new Act with ActorLogging {
-          become {
+        new Actor with ActorLogging {
+          def receive = {
             case Delivery(_, envelope, _, body) => {
               log.info(s"received ${new String(body, "UTF-8")} tag = ${envelope.getDeliveryTag} redeliver = ${envelope.isRedeliver}")
               counter = counter + 1
@@ -59,8 +58,8 @@ class PendingAcksSpec extends ChannelSpec with WordSpecLike {
       // create a consumer that does ack messages
       var counter1 = 0
       val goodListener = system.actorOf(Props {
-        new Act with ActorLogging {
-          become {
+        new Actor with ActorLogging {
+          def receive = {
             case Delivery(_, envelope, _, body) => {
               log.info(s"received ${new String(body, "UTF-8")} tag = ${envelope.getDeliveryTag} redeliver = ${envelope.isRedeliver}")
               counter1 = counter1 + 1

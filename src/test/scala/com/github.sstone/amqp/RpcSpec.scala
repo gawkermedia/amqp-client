@@ -28,7 +28,7 @@ class RpcSpec extends ChannelSpec {
       val routingKey = randomKey
       val proc = new RpcServer.IProcessor() {
         def process(delivery: Delivery) = Future {
-          println("processing")
+          log.debug("processing")
           val s = new String(delivery.body)
           if (s == "5") throw new Exception("I dont do 5s")
           ProcessResult(Some(delivery.body))
@@ -47,11 +47,11 @@ class RpcSpec extends ChannelSpec {
           try {
             val future = client1 ? Request(Publish("amq.direct", routingKey, i.toString.getBytes) :: Nil, 1)
             val result = Await.result(future, 1000.millis).asInstanceOf[Response]
-            println("result1 " + new String(result.deliveries.head.body))
+            log.debug("result1 " + new String(result.deliveries.head.body))
             Thread.sleep(300)
           }
           catch {
-            case e: Exception => println(e.toString)
+            case e: Exception => log.debug(e.toString)
           }
         }
       }
@@ -60,11 +60,11 @@ class RpcSpec extends ChannelSpec {
           try {
             val future = client2 ? Request(Publish("amq.direct", routingKey, i.toString.getBytes) :: Nil, 1)
             val result = Await.result(future, 1000.millis).asInstanceOf[Response]
-            println("result2 " + new String(result.deliveries.head.body))
+            log.debug("result2 " + new String(result.deliveries.head.body))
             Thread.sleep(300)
           }
           catch {
-            case e: Exception => println(e.toString)
+            case e: Exception => log.debug(e.toString)
           }
         }
       }
