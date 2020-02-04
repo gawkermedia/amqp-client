@@ -1,6 +1,5 @@
 package com.github.sstone.amqp
 
-import akka.event.Logging
 import akka.testkit.TestProbe
 import com.github.sstone.amqp.Amqp._
 import concurrent.duration._

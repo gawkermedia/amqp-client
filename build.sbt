@@ -35,24 +35,15 @@ scalacOptions ++= Seq(
 	"-Ywarn-dead-code",                  // Fail when dead code is present. Prevents accidentally unreachable code.
 	"-Ywarn-dead-code",                  // Fail when dead code is present. Prevents accidentally unreachable code.
 	"-Ywarn-numeric-widen",              // Warn when numerics are widened.
-	"-Ywarn-value-discard"               // Prevent accidental discarding of results in unit functions.
+	"-Ywarn-value-discard",              // Prevent accidental discarding of results in unit functions.
+	"-Xlint:constant",                   // Evaluation of a constant arithmetic expression results in an error.
+	"-Ywarn-extra-implicit",             // Warn when more than one implicit parameter section is defined.
+	"-Ywarn-unused:implicits",           // Warn if an implicit parameter is unused.
+	"-Ywarn-unused:locals",              // Warn if a local definition is unused.
+//	"-Ywarn-unused:params",              // Warn if a value parameter is unused. Disabled due to false positives.
+	"-Ywarn-unused:patvars",             // Warn if a variable bound in a pattern is unused.
+	"-Ywarn-unused:privates"             // Warn if a private member is unused.
 )
-
-// Enable compiler checks added in Scala 2.12
-scalacOptions ++= (CrossVersion.partialVersion((scalaVersion in ThisProject).value) match {
-	case Some((2, scalaMajor)) if scalaMajor >= 12 =>
-		Seq(
-			"-Xlint:constant",                   // Evaluation of a constant arithmetic expression results in an error.
-			"-Ywarn-extra-implicit",             // Warn when more than one implicit parameter section is defined.
-			"-Ywarn-unused:implicits",           // Warn if an implicit parameter is unused.
-			"-Ywarn-unused:locals",              // Warn if a local definition is unused.
-//			"-Ywarn-unused:params",              // Warn if a value parameter is unused. Disabled due to false positives.
-			"-Ywarn-unused:patvars",             // Warn if a variable bound in a pattern is unused.
-			"-Ywarn-unused:privates"             // Warn if a private member is unused.
-		)
-	case _ =>
-		Seq()
-})
 
 libraryDependencies ++= Seq(
 	"com.typesafe.akka"    %% "akka-actor"          % akkaVersion % Provided,
@@ -63,12 +54,5 @@ libraryDependencies ++= Seq(
 	"com.typesafe.akka"    %% "akka-slf4j"          % akkaVersion % Provided,
 	"ch.qos.logback"       %  "logback-classic"     % "1.0.0" % Provided
 )
-
-libraryDependencies ++= (CrossVersion.partialVersion(scalaVersion.value) match {
-	case Some((2, scalaMajor)) if scalaMajor < 13 =>
-	  Seq("org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1")
-	case _ =>
-	  Seq()
-})
 
 testOptions in Test := Seq.empty
